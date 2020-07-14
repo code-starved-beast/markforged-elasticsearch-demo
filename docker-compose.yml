@@ -1,0 +1,105 @@
+version: '3.5'
+
+services:
+  postgresql:
+    image: postgres
+    environment:
+      - "POSTGRES_DB=example"
+      - "POSTGRES_USER=user"
+      - "POSTGRES_PASSWORD=password"
+    ports:
+      - "5432:5432"
+  kibana:
+    image: "docker.elastic.co/kibana/kibana:7.8.0"
+    ports:
+      - '5601:5601'
+    environment:
+      ELASTICSEARCH_URL: http://es01:9200
+      ELASTICSEARCH_HOSTS: http://es01:9200
+    networks:
+      - elastic 
+    depends_on:
+      - es01
+      - es02
+      - es03 
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+  es02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    environment:
+      - node.name=es02
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata2:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+  es03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.8.0
+    environment:
+      - node.name=es03
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es01,es02
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata3:/usr/share/elasticsearch/data
+    networks:
+      - elastic
+  # logstash:
+  #   container_name: logstash
+  #   build:
+  #     context: ./logstash
+  #   volumes:
+  #     - ./logstash/config/pipelines.yml:/usr/share/logstash/config/pipelines.yml
+  #     - ./logstash/pipeline/:/usr/share/logstash/pipeline/
+  #   restart: always
+  #   ports:
+  #     - "9600:9600"
+  #     - "5044:5044"
+  #   depends_on:
+  #     - es01
+  #     - es02
+  #     - es03
+  #     - postgresql
+
+volumes:
+  esdata1:
+    driver: local
+  esdata2:
+    driver: local
+  esdata3:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge

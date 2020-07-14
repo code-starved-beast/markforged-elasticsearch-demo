@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+		"alwaysStrict": true,
+		"allowJs": true,
+		"esModuleInterop": true,
+		"module": "commonjs",
+		"sourceMap": true,
+		"target": "ESNext",
+        "typeRoots" : [
+			"@types",
+			"node_modules/@types"
+		]
+    }
+}

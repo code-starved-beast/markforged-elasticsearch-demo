@@ -1,0 +1,4 @@
+- pipeline.id: changes
+  path.config: /usr/share/logstash/pipeline/changes.cfg
+- pipeline.id: characters 
+  path.config: /usr/share/logstash/pipeline/characters.cfg
